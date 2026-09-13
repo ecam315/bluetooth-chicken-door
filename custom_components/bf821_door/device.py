@@ -24,7 +24,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
 from . import protocol
-from .const import NOTIFY_UUID, STATUS_TIMEOUT, WRITE_GAP, WRITE_UUID
+from .const import (
+    NOTIFY_UUID,
+    STATUS_SETTLE,
+    STATUS_TIMEOUT,
+    WRITE_GAP,
+    WRITE_UUID,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -70,19 +76,22 @@ class BF821Device:
                 "Bluetooth adapter or proxy"
             )
 
+        loop = asyncio.get_running_loop()
         state = protocol.DoorState()
-        status_seen = asyncio.Event()
+        first_frame = asyncio.Event()
+        last_rx = 0.0
 
         def _on_notify(_char: BleakGATTCharacteristic, data: bytearray) -> None:
-            nonlocal state
+            nonlocal state, last_rx
             raw = bytes(data)
             _LOGGER.debug("%s: notify %s", self.name, raw.hex(" "))
             parsed = protocol.parse(raw)
             if parsed is None:
+                _LOGGER.debug("%s: ignoring unknown frame %s", self.name, raw.hex(" "))
                 return
             state = state.merge(parsed)
-            if protocol.is_full_status(raw):
-                status_seen.set()
+            last_rx = loop.time()
+            first_frame.set()
 
         try:
             client = await establish_connection(
@@ -126,13 +135,22 @@ class BF821Device:
 
             try:
                 async with asyncio.timeout(STATUS_TIMEOUT):
-                    await status_seen.wait()
+                    await first_frame.wait()
             except TimeoutError as err:
                 raise BF821Error(
-                    f"{self.name} did not return a status frame within "
+                    f"{self.name} did not answer the status request within "
                     f"{STATUS_TIMEOUT:.0f}s"
                 ) from err
 
+            # The reply is a burst of separate frames; it is complete once
+            # the door has gone quiet for a moment.
+            while (quiet := STATUS_SETTLE - (loop.time() - last_rx)) > 0:
+                await asyncio.sleep(quiet)
+
+            if state.opened is None:
+                raise BF821Error(
+                    f"{self.name} replied but never reported a door position"
+                )
             return state
         except BleakError as err:
             raise BF821Error(f"{self.name} session failed: {err}") from err

@@ -72,7 +72,29 @@ Frame = `5B <type> [payload…]`.
 | `0A` | `5B 0A` | auto-by-light enabled ack (`=1`) |
 | `0B` | `5B 0B` | auto-by-light disabled ack (`=0`) |
 
-Full-status `5B 06` byte map (index into the frame):
+### ⚠️ Correction from real hardware (verified 2026-09-13)
+
+**The device does not send the 12-byte `5B 06` frame the app parses.** Captured
+from an actual BF821 through an ESPHome proxy, a `5A 00` poll is answered with a
+**burst of separate frames**, led by a bare two-byte marker:
+
+```
+write  5a 05 0e 0e 16      clock sync
+notify 5b 05 0e 56 de      clock ack  (type 0x05 -- undocumented, app ignores it)
+write  5a 00               poll
+notify 5b 06               bare marker, 2 bytes -- NOT the 12-byte frame
+notify 5b 01               opened
+notify 5b 0b               auto-by-light off
+notify 5b 03 00 00 00 00   open timer, disabled
+notify 5b 04 00 00 00 00   close timer, disabled
+```
+
+Frames arrive ~30-80 ms apart. A client must therefore collect frames until the
+door goes quiet, rather than waiting for one combined frame. The 12-byte layout
+below is retained because the app parses it and other firmware may emit it, but
+it was **not** observed on this unit.
+
+Full-status `5B 06` byte map (index into the frame), long form only:
 - [2] opened (0/1)
 - [3][4][5] open-timer HH, mm, ss
 - [6] open-timer on

@@ -93,10 +93,47 @@ class TestDecoding:
         assert state.auto_by_light is True
         assert protocol.is_full_status(FULL_STATUS)
 
-    def test_full_status_requires_full_length(self) -> None:
-        short = bytes.fromhex("5b060106000001")
-        assert protocol.parse(short) is None
-        assert not protocol.is_full_status(short)
+    def test_bare_status_marker_is_recognised(self) -> None:
+        # Real BF821 firmware answers a poll with a bare 5B 06 followed by a
+        # burst of individual frames, NOT the 12-byte frame the vendor app
+        # parses. The marker must count as recognised (empty state), not as
+        # an unknown frame, or the burst never starts.
+        marker = protocol.parse(bytes.fromhex("5b06"))
+        assert marker is not None
+        assert marker.opened is None
+        assert not protocol.is_full_status(bytes.fromhex("5b06"))
+
+    def test_clock_ack_is_recognised(self) -> None:
+        # Observed reply to 5A 05; carries nothing we use.
+        ack = protocol.parse(bytes.fromhex("5b050e56de"))
+        assert ack is not None
+        assert ack.opened is None
+
+
+class TestRealDeviceBurst:
+    """The exact frames captured from the door on first contact."""
+
+    CAPTURE = [
+        "5b06",           # burst marker
+        "5b01",           # opened
+        "5b0b",           # light mode off
+        "5b0300000000",   # open timer disabled, 00:00:00
+        "5b0400000000",   # close timer disabled, 00:00:00
+    ]
+
+    def test_burst_merges_to_complete_state(self) -> None:
+        state = protocol.DoorState()
+        for frame in self.CAPTURE:
+            parsed = protocol.parse(bytes.fromhex(frame))
+            assert parsed is not None, f"{frame} must be recognised"
+            state = state.merge(parsed)
+
+        assert state.opened is True
+        assert state.auto_by_light is False
+        assert state.open_timer_on is False
+        assert state.close_timer_on is False
+        assert state.open_timer == time(0, 0, 0)
+        assert state.close_timer == time(0, 0, 0)
 
     def test_partial_timer_frames(self) -> None:
         state = protocol.parse(bytes.fromhex("5b0301071e00"))

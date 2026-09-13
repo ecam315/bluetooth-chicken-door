@@ -31,6 +31,7 @@ RX_OPENED = 0x01
 RX_CLOSED = 0x02
 RX_OPEN_TIMER = 0x03
 RX_CLOSE_TIMER = 0x04
+RX_CLOCK_ACK = 0x05
 RX_FULL_STATUS = 0x06
 RX_AUTO_BY_LIGHT_ON = 0x0A
 RX_AUTO_BY_LIGHT_OFF = 0x0B
@@ -139,8 +140,15 @@ def _safe_time(hour: int, minute: int, second: int) -> time | None:
 def parse(data: bytes) -> DoorState | None:
     """Decode one notification frame.
 
-    Returns ``None`` for anything unrecognised -- the door emits frames with
-    other headers (0x5A, 0x0A, 0x5C) that the vendor app also discards.
+    Returns an empty ``DoorState`` for a frame that is recognised but carries
+    no state, and ``None`` for anything unrecognised -- the door emits frames
+    with other headers (0x5A, 0x0A, 0x5C) that the vendor app also discards.
+
+    Observed on real BF821 firmware, which differs from what the decompiled
+    app implies: a poll is answered with a *burst* of separate frames, led by
+    a bare two-byte ``5B 06`` marker rather than the 12-byte combined status
+    frame the app parses. Both shapes are handled -- the long form is still
+    accepted in case other firmware sends it.
     """
     if len(data) < 2 or data[0] != RX_HEADER:
         return None
@@ -167,15 +175,24 @@ def parse(data: bytes) -> DoorState | None:
             close_timer=_safe_time(data[3], data[4], data[5]),
         )
 
-    if kind == RX_FULL_STATUS and len(data) >= FULL_STATUS_LEN:
-        return DoorState(
-            opened=data[2] == 1,
-            open_timer=_safe_time(data[3], data[4], data[5]),
-            open_timer_on=data[6] == 1,
-            close_timer=_safe_time(data[7], data[8], data[9]),
-            close_timer_on=data[10] == 1,
-            auto_by_light=data[11] == 1,
-        )
+    if kind == RX_FULL_STATUS:
+        if len(data) >= FULL_STATUS_LEN:
+            return DoorState(
+                opened=data[2] == 1,
+                open_timer=_safe_time(data[3], data[4], data[5]),
+                open_timer_on=data[6] == 1,
+                close_timer=_safe_time(data[7], data[8], data[9]),
+                close_timer_on=data[10] == 1,
+                auto_by_light=data[11] == 1,
+            )
+        # Bare marker announcing the burst that follows. Recognised, but
+        # carries nothing on its own.
+        return DoorState()
+
+    if kind == RX_CLOCK_ACK:
+        # Acknowledges 5A 05. The vendor app ignores it and so do we; it is
+        # recognised here only so it is not logged as an unknown frame.
+        return DoorState()
 
     return None
 

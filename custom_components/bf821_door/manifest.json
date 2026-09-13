@@ -6,13 +6,19 @@
       "local_name": "BF821*"
     }
   ],
-  "codeowners": ["@ecam315"],
+  "codeowners": [
+    "@ecam315"
+  ],
   "config_flow": true,
-  "dependencies": ["bluetooth_adapters"],
+  "dependencies": [
+    "bluetooth_adapters"
+  ],
   "documentation": "https://github.com/ecam315/bluetooth-chicken-door",
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ecam315/bluetooth-chicken-door/issues",
-  "requirements": ["bleak-retry-connector>=3.5.0"],
-  "version": "0.1.0"
+  "requirements": [
+    "bleak-retry-connector>=3.5.0"
+  ],
+  "version": "0.1.1"
 }

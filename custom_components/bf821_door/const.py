@@ -20,8 +20,12 @@ DEFAULT_SCAN_INTERVAL_MINUTES: Final = 5
 MIN_SCAN_INTERVAL_MINUTES: Final = 1
 MAX_SCAN_INTERVAL_MINUTES: Final = 60
 
-# Seconds to wait for the 0x5B 0x06 status frame after asking for it.
+# Seconds to wait for the first status frame after asking for it.
 STATUS_TIMEOUT: Final = 10.0
+# A poll is answered with a burst of separate frames rather than one combined
+# frame, so the reply is considered complete once this long passes with no
+# further notification. Observed spacing between frames is ~30-80 ms.
+STATUS_SETTLE: Final = 1.2
 # Gap between consecutive writes in one session; the firmware drops frames
 # that arrive back to back.
 WRITE_GAP: Final = 0.2
