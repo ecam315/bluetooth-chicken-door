@@ -97,9 +97,13 @@ Notes / gaps:
 ```bash
 W=0000ff11-0000-1000-8000-00805f9b34fb
 N=0000ff12-0000-1000-8000-00805f9b34fb
+PROXY=<proxy-ip>          # ESPHome node with bluetooth_proxy: active: true
+PSK='<noise-psk>'         # that node's api encryption key
+DOOR=<aa:bb:cc:dd:ee:ff>  # the door's BLE address
+
 # poll status
-python ble_proxy_probe.py write --host 10.20.40.158 --password '<psk>' \
-  --mac 41:42:F8:E0:55:59 --char $W --data 5a00 --listen $N
+python ble_proxy_probe.py write --host "$PROXY" --password "$PSK" \
+  --mac "$DOOR" --char $W --data 5a00 --listen $N
 # open / close / pause
 #   --data 5a01   |   --data 5a02   |   --data 5a09
 ```
