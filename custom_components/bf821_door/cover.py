@@ -35,13 +35,14 @@ class BF821Cover(BF821Entity, CoverEntity):
     """The coop door itself."""
 
     _attr_name = None
-    # GATE, not DOOR. Home Assistant's HomeKit bridge only maps a cover to a
+    # GARAGE, not DOOR. Home Assistant's HomeKit bridge only maps a cover to a
     # HomeKit Door when it also supports SET_POSITION, which this door cannot
     # (it reports open/closed with no position). device_class DOOR therefore
     # fell through to WindowCoveringBasic and showed up in HomeKit as blinds.
-    # GARAGE/GATE map to GarageDoorOpener on OPEN|CLOSE alone, which is the
-    # honest match: a binary barrier with opening/closing transitions.
-    _attr_device_class = CoverDeviceClass.GATE
+    # GARAGE maps to GarageDoorOpener on OPEN|CLOSE alone, which is the honest
+    # match: a binary barrier with opening/closing transitions and no
+    # intermediate position.
+    _attr_device_class = CoverDeviceClass.GARAGE
     _attr_supported_features = (
         CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
     )
