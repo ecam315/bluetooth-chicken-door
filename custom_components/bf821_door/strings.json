@@ -1,0 +1,57 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "BF821 coop door",
+        "description": "Pick the door to add. Only doors currently in range of a Bluetooth adapter or proxy are listed.",
+        "data": {
+          "address": "Device"
+        }
+      },
+      "confirm": {
+        "title": "BF821 coop door",
+        "description": "Add {name} ({address})?"
+      }
+    },
+    "abort": {
+      "already_configured": "This door is already configured.",
+      "no_devices_found": "No BF821 door found in range. The door must be within range of a Bluetooth adapter or ESPHome proxy, and must not be connected to a phone — it accepts only one connection at a time."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BF821 coop door options",
+        "description": "The door is solar powered, so it is polled rather than kept connected. Shorter intervals give fresher state at the cost of battery.",
+        "data": {
+          "scan_interval_minutes": "Poll interval (minutes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "switch": {
+      "light_mode": {
+        "name": "Light mode"
+      },
+      "open_timer": {
+        "name": "Open schedule"
+      },
+      "close_timer": {
+        "name": "Close schedule"
+      },
+      "lamp": {
+        "name": "Lamp"
+      }
+    },
+    "time": {
+      "open_time": {
+        "name": "Open time"
+      },
+      "close_time": {
+        "name": "Close time"
+      }
+    }
+  }
+}

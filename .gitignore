@@ -1,0 +1,16 @@
+# Reverse-engineering workspace: large binaries and decompiler output.
+# PROTOCOL.md is the durable artefact and IS tracked.
+apk-re/apk/
+apk-re/out/
+apk-re/tools/
+
+# Claude Code personal overrides
+.claude/settings.local.json
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
