@@ -3,14 +3,14 @@
     "flow_title": "{name}",
     "step": {
       "user": {
-        "title": "BF821 coop door",
+        "title": "Bluetooth Chicken Door",
         "description": "Pick the door to add. Only doors currently in range of a Bluetooth adapter or proxy are listed.",
         "data": {
           "address": "Device"
         }
       },
       "confirm": {
-        "title": "BF821 coop door",
+        "title": "Bluetooth Chicken Door",
         "description": "Add {name} ({address})?"
       }
     },
@@ -22,7 +22,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "BF821 coop door options",
+        "title": "Bluetooth Chicken Door options",
         "description": "The door is solar powered, so it is polled rather than kept connected. Shorter intervals give fresher state at the cost of battery.",
         "data": {
           "scan_interval_minutes": "Poll interval (minutes)"

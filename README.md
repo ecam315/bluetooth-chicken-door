@@ -1,4 +1,4 @@
-# BF821 Chicken Coop Door — Home Assistant integration
+# Bluetooth Chicken Door — Home Assistant integration
 
 Drives a **BF821** solar-powered automatic chicken coop door over BLE, including
 through an ESPHome Bluetooth proxy. The vendor app (Zhicase Pet Door) is not
