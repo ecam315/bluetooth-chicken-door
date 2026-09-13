@@ -94,6 +94,25 @@ door goes quiet, rather than waiting for one combined frame. The 12-byte layout
 below is retained because the app parses it and other firmware may emit it, but
 it was **not** observed on this unit.
 
+### Movement commands acknowledge the TARGET state immediately
+
+Verified by physically cycling the door 2026-09-13:
+
+```
+17:02:20.448  write  5a 02    close
+17:02:20.650  notify 5b 02    "closed"  <-- 202 ms later, before it can have moved
+17:02:36.725  write  5a 01    open
+17:02:36.927  notify 5b 01    "open"    <-- 202 ms later
+```
+
+`5B 01` / `5B 02` after a command mean *"command accepted, target is open/closed"*,
+**not** *"travel complete"*. The door never signals the end of travel, and there is
+no position, no moving flag, and no arrival event anywhere in the protocol.
+
+Consequence for any client: `opening` / `closing` can only ever be a local
+estimate. Do not wait for a frame that reports travel finishing -- none comes.
+Poll for ground truth instead.
+
 Full-status `5B 06` byte map (index into the frame), long form only:
 - [2] opened (0/1)
 - [3][4][5] open-timer HH, mm, ss

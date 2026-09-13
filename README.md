@@ -55,6 +55,12 @@ These are properties of the device, not of the integration:
 - **Open/closed only.** The door reports a binary state — no position percentage,
   and no "currently moving" flag. `opening` / `closing` are inferred from the
   command just sent and expire after 60 s.
+- **Travel completion is never reported.** The door acknowledges a movement
+  command with its *target* state about 200 ms later, long before it has
+  physically moved, and then says nothing when it arrives. So `opening` /
+  `closing` in Home Assistant is a timed estimate, not a measurement — it clears
+  ~30 s after the command regardless of how long the door actually takes. The
+  next poll always corrects it.
 - **The lamp has no readback.** `switch.lamp` is an assumed state.
 - **One connection at a time.** If a phone running the vendor app is connected,
   Home Assistant cannot connect, and vice versa.
