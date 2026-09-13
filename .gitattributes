@@ -1,0 +1,8 @@
+# Keep LF in the repo regardless of the checkout platform. Home Assistant
+# runs these files on Linux; CRLF sneaking in from Windows checkouts causes
+# noisy diffs and has bitten YAML/JSON tooling before.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.apk binary
+*.zip binary
