@@ -72,3 +72,28 @@ Assistant install:
 ```bash
 python -m pytest tests/test_protocol.py -v
 ```
+
+## Status
+
+Written against the protocol recovered from the vendor app and unit-tested, but
+**not yet exercised against real hardware**. Expect rough edges on first run;
+enable debug logging to see every frame in both directions:
+
+```yaml
+logger:
+  logs:
+    custom_components.bf821_door: debug
+```
+
+## Provenance and licensing
+
+The protocol was recovered by decompiling the freely-downloadable vendor app to
+make this door interoperate with Home Assistant. **No vendor code or assets are
+redistributed here** — the APK and all decompiler output are excluded from the
+repository, and everything in `custom_components/` is an independent
+implementation. `apk-re/PROTOCOL.md` is a description of the wire format, not
+vendor source.
+
+Not affiliated with, endorsed by, or supported by Zhicase or UVWORK. "BF821" is
+used only to identify the compatible device. Use at your own risk — see the
+warranty disclaimer in [LICENSE](LICENSE).
